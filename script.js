@@ -8,11 +8,18 @@ const finalScoreElement = document.getElementById('finalScore');
 const startHighScoreElement = document.getElementById('startHighScore');
 const gameOverHighScoreElement = document.getElementById('gameOverHighScore');
 
-const GRAVITY = 0.25;
-const JUMP_FORCE = -6;
+const BASE_GRAVITY = 0.15;
+const BASE_JUMP_FORCE = -5;
 const PIPE_WIDTH = 80;
-const PIPE_GAP = 150;
-const PIPE_SPEED = 1.5;
+const BASE_PIPE_GAP = 180;
+const BASE_PIPE_SPEED = 1;
+const BASE_PIPE_SPAWN_RATE = 200;
+
+let currentGravity = BASE_GRAVITY;
+let currentJumpForce = BASE_JUMP_FORCE;
+let currentPipeGap = BASE_PIPE_GAP;
+let currentPipeSpeed = BASE_PIPE_SPEED;
+let currentPipeSpawnRate = BASE_PIPE_SPAWN_RATE;
 
 let gameState = 'start';
 let score = 0;
@@ -29,14 +36,14 @@ const bird = {
     
     update() {
         if (gameState === 'playing') {
-            this.velocity += GRAVITY;
+            this.velocity += currentGravity;
             this.y += this.velocity;
         }
     },
     
     jump() {
         if (gameState === 'playing') {
-            this.velocity = JUMP_FORCE;
+            this.velocity = currentJumpForce;
         }
     },
     
@@ -61,23 +68,49 @@ class Pipe {
     constructor(x) {
         this.x = x;
         this.width = PIPE_WIDTH;
-        this.gap = PIPE_GAP;
+        this.gap = currentPipeGap;
         this.topHeight = Math.random() * (canvas.height - this.gap - 100) + 50;
         this.bottomY = this.topHeight + this.gap;
         this.passed = false;
+        this.difficultyLevel = this.getDifficultyLevel();
+    }
+    
+    getDifficultyLevel() {
+        if (score < 10) return 'easy';
+        if (score < 30) return 'medium';
+        return 'hard';
     }
     
     update() {
-        this.x -= PIPE_SPEED;
+        this.x -= currentPipeSpeed;
     }
     
     draw() {
-        ctx.fillStyle = '#228B22';
+        let mainColor, capColor;
         
+        switch(this.difficultyLevel) {
+            case 'easy':
+                mainColor = '#228B22';
+                capColor = '#32CD32';
+                break;
+            case 'medium':
+                mainColor = '#DAA520';
+                capColor = '#FFD700';
+                break;
+            case 'hard':
+                mainColor = '#DC143C';
+                capColor = '#FF6B6B';
+                break;
+            default:
+                mainColor = '#228B22';
+                capColor = '#32CD32';
+        }
+        
+        ctx.fillStyle = mainColor;
         ctx.fillRect(this.x, 0, this.width, this.topHeight);
         ctx.fillRect(this.x, this.bottomY, this.width, canvas.height - this.bottomY);
         
-        ctx.fillStyle = '#32CD32';
+        ctx.fillStyle = capColor;
         ctx.fillRect(this.x, this.topHeight - 30, this.width + 10, 30);
         ctx.fillRect(this.x, this.bottomY, this.width + 10, 30);
     }
@@ -103,7 +136,7 @@ function spawnPipe() {
 }
 
 function updatePipes() {
-    if (frameCount % 150 === 0) {
+    if (frameCount % currentPipeSpawnRate === 0) {
         spawnPipe();
     }
     
@@ -119,6 +152,8 @@ function updatePipes() {
                 highScore = score;
                 updateHighScoreDisplay();
             }
+            
+            updateDifficulty();
         }
         
         if (pipes[i].isOffScreen()) {
@@ -157,6 +192,7 @@ function resetGame() {
     scoreElement.textContent = score;
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
+    resetDifficulty();
 }
 
 function startGame() {
@@ -221,6 +257,29 @@ canvas.addEventListener('click', () => {
         bird.jump();
     }
 });
+
+function updateDifficulty() {
+    if (score < 10) {
+        return;
+    }
+    
+    const difficultyLevel = Math.floor((score - 10) / 10);
+    const difficultyMultiplier = difficultyLevel * 0.1;
+    
+    currentGravity = BASE_GRAVITY + (difficultyMultiplier * 0.1);
+    currentJumpForce = BASE_JUMP_FORCE - (difficultyMultiplier * 0.5);
+    currentPipeSpeed = BASE_PIPE_SPEED + (difficultyMultiplier * 0.3);
+    currentPipeGap = Math.max(120, BASE_PIPE_GAP - (difficultyMultiplier * 15));
+    currentPipeSpawnRate = Math.max(80, BASE_PIPE_SPAWN_RATE - (difficultyMultiplier * 20));
+}
+
+function resetDifficulty() {
+    currentGravity = BASE_GRAVITY;
+    currentJumpForce = BASE_JUMP_FORCE;
+    currentPipeGap = BASE_PIPE_GAP;
+    currentPipeSpeed = BASE_PIPE_SPEED;
+    currentPipeSpawnRate = BASE_PIPE_SPAWN_RATE;
+}
 
 function updateHighScoreDisplay() {
     highScoreElement.textContent = `High Score: ${highScore}`;
