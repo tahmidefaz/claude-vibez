@@ -8,6 +8,13 @@ const finalScoreElement = document.getElementById('finalScore');
 const startHighScoreElement = document.getElementById('startHighScore');
 const gameOverHighScoreElement = document.getElementById('gameOverHighScore');
 
+const backgroundMusic = new Audio('music.mp3');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.3;
+
+const gameOverSound = new Audio('gameover.mp3');
+gameOverSound.volume = 0.5;
+
 const BASE_GRAVITY = 0.15;
 const BASE_JUMP_FORCE = -5;
 const PIPE_WIDTH = 80;
@@ -181,6 +188,15 @@ function gameOver() {
     finalScoreElement.textContent = score;
     gameOverHighScoreElement.textContent = highScore;
     gameOverScreen.classList.remove('hidden');
+    backgroundMusic.pause();
+    playGameOverSound();
+}
+
+function playGameOverSound() {
+    gameOverSound.currentTime = 0;
+    gameOverSound.play().catch(e => {
+        console.log('Game over sound failed to play:', e);
+    });
 }
 
 function resetGame() {
@@ -193,6 +209,7 @@ function resetGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     resetDifficulty();
+    playBackgroundMusic();
 }
 
 function startGame() {
@@ -285,6 +302,13 @@ function updateHighScoreDisplay() {
     highScoreElement.textContent = `High Score: ${highScore}`;
     startHighScoreElement.textContent = highScore;
     gameOverHighScoreElement.textContent = highScore;
+}
+
+function playBackgroundMusic() {
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play().catch(e => {
+        console.log('Audio autoplay prevented:', e);
+    });
 }
 
 updateHighScoreDisplay();
