@@ -1,3 +1,5 @@
+![Game Screenshot](gameplay.png)
+
 # Flappy Bird Game
 
 A browser-based recreation of the classic Flappy Bird game built with HTML5 Canvas, CSS, and JavaScript. Features progressive difficulty, visual difficulty indicators, and audio support.
