@@ -275,6 +275,18 @@ canvas.addEventListener('click', () => {
     }
 });
 
+startScreen.addEventListener('click', () => {
+    if (gameState === 'start') {
+        startGame();
+    }
+});
+
+gameOverScreen.addEventListener('click', () => {
+    if (gameState === 'gameOver') {
+        startGame();
+    }
+});
+
 function updateDifficulty() {
     if (score < 10) {
         return;
